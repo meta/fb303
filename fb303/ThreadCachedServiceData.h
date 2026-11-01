@@ -574,7 +574,7 @@ struct SubkeyUtils : SubkeyUtilsBase {
   static auto decaySubkeys(Args&&... subkeys) {
     static_assert(sizeof...(Args) == N, "Incorrect number of subkeys.");
     static_assert(
-        (IsValidSubkey<folly::remove_cvref_t<Args>> && ...),
+        (IsValidSubkey<std::remove_cvref_t<Args>> && ...),
         "Arguments must be strings or integers");
     auto decay = folly::overload(decay_<int64_t>{}, decay_<std::string_view>{});
     return std::tuple{decay(subkeys)...};
@@ -584,7 +584,7 @@ struct SubkeyUtils : SubkeyUtilsBase {
   static SubkeyArray makeSubkeyArray(Args&&... subkeys) {
     static_assert(sizeof...(Args) == N, "Incorrect number of subkeys.");
     static_assert(
-        (IsValidSubkey<folly::remove_cvref_t<Args>> && ...),
+        (IsValidSubkey<std::remove_cvref_t<Args>> && ...),
         "Arguments must be strings or integers");
     auto mkvar = folly::overload(
         mkvar_<int64_t>{}, mkvar_<std::string_view, std::string>{});
