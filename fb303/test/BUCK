@@ -318,10 +318,11 @@ cpp_unittest(
         "fbsource//third-party/googletest:gtest",
         "fbsource//xplat/folly:conv",
         "fbsource//xplat/folly:range",
+        "fbsource//xplat/folly:stop_watch",
         "fbsource//xplat/folly:utility",
         "fbsource//xplat/folly/container:map_util",
-        "//common/datastruct:simple_lru_map",
-        "//common/time:time",
+        "//common/time:time_literals",
+        "//fb303:simple_lru_map",
     ],
 )
 

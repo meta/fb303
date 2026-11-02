@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-#include "common/datastruct/SimpleLRUMap.h"
+#include <fb303/SimpleLRUMap.h>
 
-#include "common/time/Clock.h"
+#include "common/time/TimeLiterals.h"
 
 #include <folly/Conv.h>
 #include <folly/Range.h>
 #include <folly/Utility.h>
 #include <folly/container/MapUtil.h>
+#include <folly/stop_watch.h>
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -32,7 +33,7 @@
 using namespace std;
 using namespace folly;
 using namespace facebook;
-using namespace facebook::datastruct;
+using facebook::fb303::SimpleLRUMap;
 
 // HELPER FUNCTIONS
 
@@ -398,7 +399,7 @@ TEST(SimpleLRUMap, ConstComplexity) {
   // holding 1M elements and expect this to execute
   // in reasonable time, details: t4225171
 
-  facebook::coarse_stop_watch<std::chrono::seconds> watch;
+  folly::coarse_stop_watch<std::chrono::seconds> watch;
   lru_map lru(1 << 20);
   for (int i = 0; i < (1 << 22); ++i) {
     // should be pretty fast as 3 letter string will be stored in the
