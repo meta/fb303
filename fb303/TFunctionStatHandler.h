@@ -375,7 +375,6 @@ std::shared_ptr<TFunctionStatHandler> addThriftFunctionStatHandler(
 
 void withThriftFunctionStats(
     const char* serviceName,
-    BaseService* service,
     folly::Function<void()>&& fn);
 
 } // namespace facebook::fb303
