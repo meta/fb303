@@ -74,7 +74,11 @@ find_package(fmt CONFIG REQUIRED)
 # If fbthrift/fizz/wangle are being built from source (FetchContent), skip
 # find_package
 if (NOT DEFINED fbthrift_SOURCE_DIR)
-  find_package(FBThrift CONFIG REQUIRED)
+  find_package(thrift CONFIG REQUIRED)
+  if (PYTHON_EXTENSIONS)
+    # add_fbthrift_py_library() depends on FBThrift::thrift_py.py_lib.
+    find_package(FBThrift CONFIG REQUIRED)
+  endif()
 endif()
 if (NOT DEFINED fizz_SOURCE_DIR)
   find_package(fizz CONFIG REQUIRED)
@@ -83,7 +87,7 @@ if (NOT DEFINED wangle_SOURCE_DIR)
   find_package(wangle CONFIG REQUIRED)
 endif()
 
-include(FBThriftLibrary)
+include(FBThriftPyLibrary)
 
 add_subdirectory(fb303/thrift)
 
@@ -113,7 +117,7 @@ target_include_directories(fb303 PUBLIC
 target_link_libraries(fb303
   fb303_thrift_cpp
   Folly::folly
-  FBThrift::thrift-cpp
+  thrift::rpc
 )
 
 install(

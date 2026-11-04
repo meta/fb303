@@ -17,6 +17,9 @@
 set_and_check(FB303_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
 set_and_check(FB303_CMAKE_DIR "@PACKAGE_CMAKE_INSTALL_DIR@")
 
+include(CMakeFindDependencyMacro)
+find_dependency(thrift CONFIG)
+
 if (NOT TARGET fb303::fb303)
   include("${FB303_CMAKE_DIR}/fb303-targets.cmake")
 endif()
