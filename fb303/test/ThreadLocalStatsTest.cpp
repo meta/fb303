@@ -18,11 +18,13 @@
 
 #include <fb303/ServiceData.h>
 #include <fb303/ThreadCachedServiceData.h>
+#include <fmt/format.h>
 #include <folly/Singleton.h>
 #include <folly/synchronization/test/Barrier.h>
 
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <random>
@@ -593,6 +595,66 @@ TEST(ThreadLocalStats, moveHistogram) {
   }
 }
 
+namespace {
+std::vector<int64_t> histogramTestValues() {
+  std::mt19937 rng(42);
+  std::uniform_int_distribution<int64_t> dist(-100, 1100);
+  std::vector<int64_t> values(1000);
+  std::generate(values.begin(), values.end(), [&] { return dist(rng); });
+  return values;
+}
+
+constexpr std::string_view kHistogramTestSuffixes[] =
+    {".sum", ".count", ".p50", ".p90", ".p99"};
+} // namespace
+
+template <typename LockTraits>
+void testHistogramAddBatch() {
+  const auto values = histogramTestValues();
+
+  ServiceData referenceData;
+  ThreadLocalStatsT<LockTraits> referenceStats(&referenceData);
+  TLHistogramT<LockTraits> reference{
+      &referenceStats, "foo", 10, 0, 1000, SUM, COUNT, 50, 90, 99};
+  for (const auto value : values) {
+    reference.addValue(value);
+  }
+  referenceStats.aggregate();
+
+  ServiceData batchedData;
+  ThreadLocalStatsT<LockTraits> batchedStats(&batchedData);
+  TLHistogramT<LockTraits> batched{
+      &batchedStats, "foo", 10, 0, 1000, SUM, COUNT, 50, 90, 99};
+  batched.addBatch(values);
+  batchedStats.aggregate();
+
+  for (const auto suffix : kHistogramTestSuffixes) {
+    const auto key = fmt::format("foo{}", suffix);
+    EXPECT_EQ(referenceData.getCounter(key), batchedData.getCounter(key))
+        << key;
+  }
+}
+
+TEST(ThreadLocalStats, histogramAddBatchMatchesAddValue) {
+  {
+    SCOPED_TRACE("TLStatsThreadSafe");
+    testHistogramAddBatch<TLStatsThreadSafe>();
+  }
+  {
+    SCOPED_TRACE("TLStatsNoLocking");
+    testHistogramAddBatch<TLStatsNoLocking>();
+  }
+}
+
+TEST(ThreadLocalStats, histogramAddEmptyBatch) {
+  ServiceData data;
+  ThreadLocalStatsT<TLStatsThreadSafe> tlstats(&data);
+  TLHistogramT<TLStatsThreadSafe> hist{&tlstats, "foo", 10, 0, 1000, COUNT};
+  hist.addBatch({});
+  tlstats.aggregate();
+  EXPECT_EQ(0, data.getCounter("foo.count"));
+}
+
 template <typename LockTraits>
 void testMoveCounter() {
   ServiceData data;
@@ -931,6 +993,27 @@ TEST_F(ThreadCachedServiceDataTest, AddHistogramValueNotExported) {
   ServiceData::get()->addHistogram(key, 1, 0, 4);
   EXPECT_FALSE(map.getLockableHistogram(key).isNull());
   EXPECT_TRUE(stats.getHistogramSafe(key));
+}
+
+TEST_F(ThreadCachedServiceDataTest, HistogramWrapperAddBatchMatchesAdd) {
+  const auto values = histogramTestValues();
+  HistogramWrapper reference(
+      "add_batch_reference", 10, 0, 1000, SUM, COUNT, 50, 90, 99);
+  HistogramWrapper batched(
+      "add_batch_batched", 10, 0, 1000, SUM, COUNT, 50, 90, 99);
+
+  for (const auto value : values) {
+    reference.add(value);
+  }
+  batched.addBatch(values);
+  ThreadCachedServiceData::get()->publishStats();
+
+  for (const auto suffix : kHistogramTestSuffixes) {
+    EXPECT_EQ(
+        fbData->getCounter(fmt::format("add_batch_reference{}", suffix)),
+        fbData->getCounter(fmt::format("add_batch_batched{}", suffix)))
+        << suffix;
+  }
 }
 
 // Test that completePendingLink correctly updates tlStatsEmpty_ flag

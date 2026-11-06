@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -1333,6 +1334,12 @@ class HistogramWrapper {
 
   void add(int64_t value = 1) {
     tcHistogram()->addValue(value);
+  }
+
+  // When calling add() on every step gets expensive, collect the values
+  // locally and pass them here once.
+  void addBatch(std::span<const CounterType> values) {
+    tcHistogram()->addBatch(values);
   }
 
  protected:

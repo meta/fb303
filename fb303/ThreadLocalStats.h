@@ -32,6 +32,7 @@
 #include <chrono>
 #include <mutex>
 #include <shared_mutex>
+#include <span>
 #include <string>
 
 namespace facebook::fb303 {
@@ -711,6 +712,16 @@ class TLHistogramT : public TLStatT<LockTraits> {
   void addRepeatedValue(int64_t value, int64_t nsamples) {
     std::unique_lock g{this->statLock_};
     simpleHistogram_.addRepeatedValue(value, nsamples);
+    dirty_ = true;
+  }
+
+  // When calling addValue() on every step gets expensive, collect the values
+  // locally and pass them here once.
+  void addBatch(std::span<const fb303::CounterType> values) {
+    std::unique_lock g{this->statLock_};
+    for (const auto value : values) {
+      simpleHistogram_.addValue(value);
+    }
     dirty_ = true;
   }
 

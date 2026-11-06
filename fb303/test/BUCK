@@ -343,6 +343,7 @@ cpp_unittest(
     ],
     network_access = network_access_utils.none(),
     deps = [
+        "fbsource//third-party/fmt:fmt",
         "fbsource//third-party/googletest:gtest",
         "fbsource//xplat/folly:singleton",
         "fbsource//xplat/folly/synchronization/test:barrier",
