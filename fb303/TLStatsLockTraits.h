@@ -242,6 +242,28 @@ class TLStatsThreadSafe {
    * object, and count() and sum() must be called from that same thread.
    * reset() writes only the baselines, and may be called from any number of
    * threads concurrently with the adder.
+   *
+   * The synchronization mechanism is a sequence counter (seqcount):
+   * https://docs.kernel.org/locking/seqlock.html
+   * addValue() is the sole writer. It brackets each update with an odd seq_
+   * and then the next even seq_. readTotals() accepts a snapshot only when
+   * the sequence is even and unchanged across all of its payload reads.
+   * Unlike a seqlock with a writer lock, the single-adder contract provides
+   * writer serialization; the reader never blocks the adder. Continuous
+   * updates or a preempted adder can delay the reader indefinitely.
+   *
+   * The adder owns cumulative totals. A drain cannot zero them without
+   * racing the adder, so it subtracts its previous snapshot and advances
+   * its baselines instead. lastSeq_ records that snapshot's sequence; its
+   * odd bit separately serializes drains, not addValue() calls.
+   * Each call advances seq_ by two, so the even sequence delta divided by
+   * two counts calls. Surplus stores the remaining count - 1 for calls
+   * whose count argument is not one.
+   *
+   * This is a C++ atomic protocol, not permission to race on ordinary
+   * payload fields. The payload release stores and acquire loads are part
+   * of snapshot validation. The sequence check also provides no pointer
+   * lifetime protection; surplus_ remains allocated until destruction.
    */
   template <typename T>
   class TimeSeriesType {
@@ -356,7 +378,8 @@ class TLStatsThreadSafe {
     }
 
     /**
-     * Reset the timeseries count + sum to 0 and return the previous value.
+     * Return the count + sum since the previous reset(), advancing only the
+     * drain baselines; the adder's cumulative totals are never reset.
      */
     std::pair<T, T> reset() noexcept {
       if (seq_.load(std::memory_order_relaxed) ==
@@ -414,6 +437,8 @@ class TLStatsThreadSafe {
           last = lastSeq_.load(std::memory_order_relaxed);
           continue;
         }
+        // This claim serializes baseline updates by drains; it does not
+        // exclude the adder or make the totals safe to read without seq_.
         // Acquire: the baselines read below are the ones the previous drain
         // wrote, ordered by its release store of lastSeq_.
         if (FOLLY_LIKELY(lastSeq_.compare_exchange_weak(
@@ -540,8 +565,12 @@ class TLStatsThreadSafe {
         const Snapshot count =
             block == nullptr ? Snapshot{} : loadTotal(block->lo, block->hi);
         const Snapshot sum = loadTotal(sumLo_, sumHi_);
-        // Relaxed: the totals above are acquire loads, so this one cannot be
-        // hoisted above them, which is all the confirmation needs.
+        // Relaxed is sufficient for confirmation: the initial acquire of
+        // an even seq_ sees the totals published by that update. If a
+        // total's acquire load sees a later update, its release store makes
+        // that update's odd seq_ happen-before this load, which cannot read
+        // the earlier even value. Keep the payload acquires before this
+        // check; acquire on this final load alone would not replace them.
         if (seq_.load(std::memory_order_relaxed) == before) {
           return Read{count, sum, before, block};
         }
