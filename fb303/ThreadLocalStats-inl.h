@@ -591,7 +591,7 @@ uint64_t ThreadLocalStatsT<LockTraits>::aggregate() {
   // call to aggregate(), ie, which are ordered with it under happen-before. So
   // results can differ as compared with a similar check which is done strictly
   // under the lock.
-  if (FOLLY_LIKELY(tlStatsEmpty_)) {
+  if (tlStatsEmpty_) [[likely]] {
     return 0;
   }
 

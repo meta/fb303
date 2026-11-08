@@ -306,7 +306,7 @@ class TLStatsThreadSafe {
       const Raw before = lo.load(std::memory_order_relaxed);
       const Raw after = before + addend;
       lo.store(after, std::memory_order_release);
-      if (FOLLY_UNLIKELY(negative ? after > before : after < before)) {
+      if (negative ? after > before : after < before) [[unlikely]] {
         // Unsigned, so there is no signed overflow to reason about. The carry
         // moves by one per wrap of the low word, so reaching a limit of Carry
         // would take 2^63 of them and cannot happen.
@@ -358,15 +358,15 @@ class TLStatsThreadSafe {
           << "Concurrent addValue() calls are not allowed";
 
       Surplus* surplus = nullptr;
-      if (FOLLY_UNLIKELY(count != 1)) {
+      if (count != 1) [[unlikely]] {
         surplus = surplus_.load(std::memory_order_relaxed);
-        if (FOLLY_UNLIKELY(surplus == nullptr)) {
+        if (surplus == nullptr) [[unlikely]] {
           surplus = makeSurplus();
         }
       }
 
       seq_.store(seq + 1, std::memory_order_relaxed);
-      if (FOLLY_UNLIKELY(surplus != nullptr)) {
+      if (surplus != nullptr) [[unlikely]] {
         // The sequence already counts this call as one, so the block carries
         // the rest. Reduced first: count - 1 is signed overflow at the
         // minimum of T.
@@ -422,7 +422,7 @@ class TLStatsThreadSafe {
       // call whatever count was; the sum is unaffected and a later call
       // allocates again.
       auto* surplus = new (std::nothrow) Surplus();
-      if (FOLLY_LIKELY(surplus != nullptr)) {
+      if (surplus != nullptr) [[likely]] {
         // Release: seeing the pointer must imply seeing the zeroed words.
         surplus_.store(surplus, std::memory_order_release);
       }
@@ -432,7 +432,7 @@ class TLStatsThreadSafe {
     FOLLY_NOINLINE std::pair<T, T> drain() noexcept {
       uint64_t last = lastSeq_.load(std::memory_order_relaxed);
       for (int spins = 0;;) {
-        if (FOLLY_UNLIKELY(last & kInFlight)) {
+        if (last & kInFlight) [[unlikely]] {
           backOff(spins);
           last = lastSeq_.load(std::memory_order_relaxed);
           continue;
@@ -441,11 +441,11 @@ class TLStatsThreadSafe {
         // exclude the adder or make the totals safe to read without seq_.
         // Acquire: the baselines read below are the ones the previous drain
         // wrote, ordered by its release store of lastSeq_.
-        if (FOLLY_LIKELY(lastSeq_.compare_exchange_weak(
+        if (lastSeq_.compare_exchange_weak(
                 last,
                 last | kInFlight,
                 std::memory_order_acquire,
-                std::memory_order_relaxed))) {
+                std::memory_order_relaxed)) [[likely]] {
           break;
         }
       }

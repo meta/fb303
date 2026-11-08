@@ -734,16 +734,15 @@ class FormattedKeyHolder : SubkeyUtils<N> {
     auto& local = *localMap_;
     auto const keytup = SubkeyUtils<N>::decaySubkeys(subkeys...);
     auto const keyhash = local.map.hash_function()(keytup);
-    if (FOLLY_LIKELY(
-            local.last.key && keyhash == local.last.hash &&
-            local.map.key_eq()(*local.last.key, keytup))) {
+    if (local.last.key && keyhash == local.last.hash &&
+        local.map.key_eq()(*local.last.key, keytup)) [[likely]] {
       return local.last.entry;
     }
     // calling outline folly::get_default would be a small perf hit, so call
     auto it = local.map.find( // map-find inline to avoid it
         local.map.prehash(keytup, keyhash),
         keytup);
-    if (FOLLY_UNLIKELY(it == local.map.end())) {
+    if (it == local.map.end()) [[unlikely]] {
       it = getFormattedKeySlow(std::forward<Args>(subkeys)...);
     }
     // if the map was updated, existing references held in local.last would be
