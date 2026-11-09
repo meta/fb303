@@ -109,6 +109,7 @@ cpp_library(
     srcs = ["TFunctionStatHandler.cpp"],
     headers = ["TFunctionStatHandler.h"],
     deps = [
+        "fbsource//xplat/folly/system:thread_id",
         ":legacy_clock",
         ":service_data",
     ],
