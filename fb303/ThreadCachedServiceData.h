@@ -1556,7 +1556,8 @@ class DynamicTimeseriesWrapper {
       const std::string& key,
       const ExportedStat* prototype = nullptr) {
     for (const auto exportType : exportTypes_) {
-      ServiceData::getRef().addStatExportType(key, exportType, prototype);
+      ServiceData::getRef().addStatExportType(
+          key, exportType, prototype, detail::shouldUpdateGlobalStatOnRead());
     }
   }
 
