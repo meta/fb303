@@ -377,7 +377,9 @@ cpp_benchmark(
     srcs = ["ThreadLocalStatsBenchmark.cpp"],
     deps = [
         "fbsource//xplat/folly:benchmark",
+        "fbsource//xplat/folly:cpp_attributes",
         "fbsource//xplat/folly/init:init",
+        "fbsource//xplat/folly/lang:keep",
         "//fb303:thread_local_stats",
     ],
 )

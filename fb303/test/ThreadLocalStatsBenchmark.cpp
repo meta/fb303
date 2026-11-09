@@ -16,10 +16,30 @@
 
 #include <fb303/ThreadLocalStats.h>
 
+#include <cstdint>
+
+#include <fb303/TLStatsLockTraits.h>
 #include <folly/Benchmark.h>
+#include <folly/CppAttributes.h>
 #include <folly/init/Init.h>
+#include <folly/lang/Keep.h>
 
 using namespace facebook::fb303;
+
+extern "C" FOLLY_KEEP FOLLY_NOINLINE void
+check_fb303_tl_stats_thread_safe_time_series_add_value(
+    TLStatsThreadSafe::TimeSeriesType<int64_t>& stat,
+    int64_t value) {
+  stat.addValue(value);
+}
+
+extern "C" FOLLY_KEEP FOLLY_NOINLINE void
+check_fb303_tl_stats_thread_safe_time_series_add_value_count(
+    TLStatsThreadSafe::TimeSeriesType<int64_t>& stat,
+    int64_t value,
+    int64_t count) {
+  stat.addValue(value, count);
+}
 
 namespace {
 ServiceData sdata;
