@@ -127,7 +127,10 @@ void TimeseriesExporter::exportStat(
     // hasn't already been registered.
     counters->registerCallback(
         counterName.data(),
-        [=] { return getStatValue(*stat->rlock(), type, lev, updateOnRead); },
+        [=] {
+          return getStatValue(
+              *stat->contextualRLock(), type, lev, updateOnRead);
+        },
         /* overwrite */ false);
   }
 }

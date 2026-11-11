@@ -45,7 +45,7 @@ class ExportedStatMapImpl : public ExportedStatMap {
      * long as the LockedStatPtr object remains in scope.
      */
     LockedStatPtr lock() const {
-      return stat_->wlock();
+      return stat_->contextualLock();
     }
 
     /* Return true if the stat held by this object is null. */
@@ -70,7 +70,7 @@ class ExportedStatMapImpl : public ExportedStatMap {
      */
     void addValue(TimePoint now, const CounterType value, int64_t times = 1)
         const {
-      stat_->wlock()->addValue(now, value, times);
+      stat_->contextualLock()->addValue(now, value, times);
     }
 
     /*
@@ -81,7 +81,7 @@ class ExportedStatMapImpl : public ExportedStatMap {
         TimePoint now,
         const CounterType value,
         int64_t numSamples) const {
-      stat_->wlock()->addValueAggregated(now, value, numSamples);
+      stat_->contextualLock()->addValueAggregated(now, value, numSamples);
     }
 
     /*
@@ -128,7 +128,7 @@ class ExportedStatMapImpl : public ExportedStatMap {
      */
     template <typename ReturnType>
     ReturnType rate(int level) {
-      return stat_->wlock()->rate<ReturnType>(level);
+      return stat_->contextualLock()->rate<ReturnType>(level);
     }
 
     /*
@@ -217,7 +217,7 @@ class ExportedStatMapImpl : public ExportedStatMap {
    */
   void
   addValue(StatPtr& item, TimePoint now, CounterType value, int64_t times = 1) {
-    item->wlock()->addValue(now, value, times);
+    item->contextualLock()->addValue(now, value, times);
   }
 
   using ExportedStatMap::addValueAggregated;
@@ -238,7 +238,7 @@ class ExportedStatMapImpl : public ExportedStatMap {
       TimePoint now,
       CounterType sum,
       int64_t nsamples) {
-    item->wlock()->addValueAggregated(now, sum, nsamples);
+    item->contextualLock()->addValueAggregated(now, sum, nsamples);
   }
 
   using ExportedStatMap::exportStat;
