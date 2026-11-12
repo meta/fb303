@@ -1411,9 +1411,9 @@ class SubminuteMinuteOnlyHistogram : public HistogramWrapper {
  *     // This will export "bar.red.cat.sum.*" and "bar.blue.42.sum.*".
  *   }
  *
- * Notes: we only support a limited subset of folly::format()'s functionality
+ * Notes: we only support a limited subset of fmt::format()'s functionality
  * for better runtime-safety and performance
- * (E.g. we don't support containers as subkeys even though folly::format()
+ * (E.g. we don't support containers as subkeys even though fmt::format()
  *  supports them as arguments.)
  */
 template <int N> // N is the number of subkeys.
