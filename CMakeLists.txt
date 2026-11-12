@@ -106,10 +106,19 @@ if (BUILD_SHARED_LIBS)
   set_property(TARGET fb303 PROPERTY VERSION ${PACKAGE_VERSION})
 endif ()
 
+# The dependency include directories describe this build, not the installed
+# package, so they are confined to the build interface. Unwrapped, they were
+# written into the installed fb303-targets.cmake, where a consumer resolves
+# them on its own machine: a getdeps build exported the absolute
+# installed/glog-<hash>/include it happened to compile against, and on
+# CentOS 10, where gflags comes from the EPEL rpm whose cmake config is found
+# through the /lib64 -> usr/lib64 symlink, GFLAGS_INCLUDE_DIR is "//include",
+# which fails find_package(fb303) outright. Consumers reach both through
+# Folly::folly, which lists them in FOLLY_INCLUDE_DIRECTORIES.
 target_include_directories(fb303 PUBLIC
-  ${GFLAGS_INCLUDE_DIR}
-  ${GLOG_INCLUDE_DIR}
-  ${DOUBLE_CONVERSION_INCLUDE_DIR}
+  $<BUILD_INTERFACE:${GFLAGS_INCLUDE_DIR}>
+  $<BUILD_INTERFACE:${GLOG_INCLUDE_DIR}>
+  $<BUILD_INTERFACE:${DOUBLE_CONVERSION_INCLUDE_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
