@@ -331,3 +331,11 @@ class ThreadLocalStatsMapT : public ThreadLocalStatsT<LockTraits> {
 } // namespace facebook::fb303
 
 #include <fb303/ThreadLocalStatsMap-inl.h>
+
+namespace facebook::fb303 {
+
+// Instantiated in ThreadLocalStatsMap.cpp.
+extern template class ThreadLocalStatsMapT<TLStatsNoLocking>;
+extern template class ThreadLocalStatsMapT<TLStatsThreadSafe>;
+
+} // namespace facebook::fb303
