@@ -16,6 +16,8 @@
 
 #include <fb303/detail/RegexUtil.h>
 
+#include <folly/container/RegexMatchCache.h>
+#include <folly/container/Reserve.h>
 namespace facebook::fb303::detail {
 
 void cachedFindMatchesCopyUnderSharedLock(

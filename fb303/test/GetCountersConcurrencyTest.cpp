@@ -15,9 +15,27 @@
  */
 
 #include <fb303/BaseService.h>
+#include <fb303/DynamicCounters.h>
+#include <fb303/ServiceData.h>
 #include <fb303/test/gen-cpp2/TestService.h>
+#include <fb303/test/gen-cpp2/TestServiceAsyncClient.h>
+#include <fb303/thrift/gen-cpp2/fb303_core_types.h>
+#include <folly/ScopeGuard.h>
+#include <folly/SocketAddress.h>
+#include <folly/futures/Future.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <thrift/lib/cpp/TApplicationException.h>
+#include <thrift/lib/cpp2/async/RpcOptions.h>
 #include <thrift/lib/cpp2/util/ScopedServerInterfaceThread.h>
+#include <atomic>
 #include <chrono>
+#include <compare>
+#include <condition_variable>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
 
 #include <gtest/gtest.h>
 

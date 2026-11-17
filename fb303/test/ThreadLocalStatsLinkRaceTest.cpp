@@ -30,7 +30,12 @@
  * modifying it in completePendingLink().
  */
 
+#include <fb303/ExportType.h>
+#include <fb303/TLStatsLockTraits.h>
 #include <fb303/ThreadLocalStats.h>
+#include <fmt/format.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 
 #include <fb303/ServiceData.h>
 #include <fmt/core.h>
@@ -39,8 +44,13 @@
 
 #include <gtest/gtest.h>
 #include <atomic>
+#include <chrono>
+#include <compare>
+#include <map>
 #include <memory>
+#include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 using namespace facebook::fb303;

@@ -15,6 +15,16 @@
  */
 
 #include <fb303/TimeseriesExporter.h>
+
+#include <stddef.h>
+#include <chrono>
+#include <compare>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <fb303/ExportType.h>
+#include <fb303/Timeseries.h>
 #include <gtest/gtest.h>
 
 using namespace facebook::fb303;

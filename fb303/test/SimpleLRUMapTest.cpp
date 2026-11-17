@@ -23,11 +23,21 @@
 #include <folly/Utility.h>
 #include <folly/container/MapUtil.h>
 #include <folly/stop_watch.h>
+#include <gflags/gflags.h>
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
+#include <stdint.h>
+#include <chrono>
+#include <functional>
+#include <iterator>
+#include <list>
+#include <map>
+#include <ostream>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace std;

@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
+#include <fb303/ExportType.h>
+#include <fb303/QuantileStat.h>
 #include <fb303/ServiceData.h>
 #include <fb303/detail/QuantileStatWrappers.h>
+#include <folly/Range.h>
 
+#include <stddef.h>
+#include <chrono>
+#include <memory>
 namespace facebook::fb303::detail {
 
 QuantileStatWrapper::QuantileStatWrapper(

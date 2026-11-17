@@ -27,13 +27,18 @@
 #include <stop_token>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include <fmt/core.h>
+#include <fmt/format.h>
+#include <folly/ScopeGuard.h>
 #include <folly/Synchronized.h>
 #include <folly/container/F14Set.h>
 #include <folly/container/RegexMatchCache.h>
+#include <folly/lang/Assume.h>
 #include <folly/lang/Hint.h>
+#include <folly/synchronization/AtomicUtil.h>
 #include <folly/synchronization/Baton.h>
 #include <gtest/gtest.h>
 

@@ -16,11 +16,22 @@
 
 #include <fb303/detail/QuantileStatWrappers.h>
 
+#include <stddef.h>
+#include <array>
+#include <chrono>
 #include <cstdint>
 #include <map>
+#include <span>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include <fb303/ExportType.h>
 #include <fb303/ServiceData.h>
+#include <folly/Range.h>
+#include <folly/hash/Hash.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 
 #include <gtest/gtest.h>
 

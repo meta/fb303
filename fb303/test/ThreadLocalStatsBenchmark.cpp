@@ -14,9 +14,22 @@
  * limitations under the License.
  */
 
+#include <fb303/ExportType.h>
+#include <fb303/ServiceData.h>
 #include <fb303/ThreadLocalStats.h>
+#include <fb303/TimeseriesExporter.h>
+#include <folly/BenchmarkUtil.h>
+#include <folly/CPortability.h>
+#include <folly/ConstexprMath.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 
+#include <stddef.h>
+#include <array>
+#include <chrono>
 #include <cstdint>
+#include <memory>
+#include <string>
 
 #include <fb303/TLStatsLockTraits.h>
 #include <folly/Benchmark.h>

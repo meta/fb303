@@ -14,18 +14,28 @@
  * limitations under the License.
  */
 
+#include <stdint.h>
 #include <ctime>
+#include <map>
+#include <memory>
+#include <string>
 
 #include <chrono>
 #include <functional>
 
 #include <boost/regex.hpp>
 #include <fb303/BaseService.h>
+#include <fb303/DynamicCounters.h>
+#include <fb303/ServiceData.h>
 #include <fb303/test/gen-cpp2/TestService.h>
+#include <fb303/test/gen-cpp2/TestServiceAsyncClient.h>
+#include <fb303/thrift/gen-cpp2/fb303_core_types.h>
 #include <folly/Benchmark.h>
 #include <folly/Optional.h>
+#include <folly/SocketAddress.h>
 #include <folly/init/Init.h>
 #include <folly/json/DynamicConverter.h>
+#include <thrift/lib/cpp2/async/RpcOptions.h>
 #include <thrift/lib/cpp2/util/ScopedServerInterfaceThread.h>
 
 using namespace facebook::fb303;

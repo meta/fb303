@@ -17,7 +17,10 @@
 #include <fb303/LegacyClock.h>
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <chrono>
+#include <ctime>
+#include <string>
 
 using namespace std::chrono;
 using facebook::fb303::get_legacy_stats_time;

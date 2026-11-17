@@ -16,18 +16,39 @@
 
 #include <fb303/ThreadLocalStats.h>
 
+#include <fb303/ExportType.h>
+#include <fb303/ExportedHistogramMapImpl.h>
 #include <fb303/ServiceData.h>
+#include <fb303/TLStatsLockTraits.h>
 #include <fb303/ThreadCachedServiceData.h>
+#include <fb303/TimeseriesExporter.h>
 #include <fmt/format.h>
+#include <folly/ConstexprMath.h>
+#include <folly/Range.h>
 #include <folly/Singleton.h>
+#include <folly/String.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
+#include <folly/portability/Sched.h>
 #include <folly/synchronization/test/Barrier.h>
+#include <glog/logging.h>
 
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <compare>
+#include <functional>
+#include <initializer_list>
+#include <iterator>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <random>
+#include <span>
 #include <string>
 #include <string_view>
 #include <thread>

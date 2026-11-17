@@ -14,12 +14,32 @@
  * limitations under the License.
  */
 
+#include <stddef.h>
+#include <stdint.h>
+#include <array>
+#include <chrono>
+#include <compare>
+#include <memory>
+#include <ostream>
+#include <span>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
+
 #include "common/stats/DynamicStats.h"
+#include "common/stats/ServiceData.h"
 
 #include <boost/thread/barrier.hpp>
+#include <fb303/ExportType.h>
 #include <fb303/ThreadCachedServiceData.h>
+#include <fb303/TimeseriesHistogram.h>
 #include <folly/Benchmark.h>
+#include <folly/Range.h>
+#include <folly/hash/Hash.h>
 #include <folly/init/Init.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 #include <folly/lang/Keep.h>
 #include <glog/logging.h>
 

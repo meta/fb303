@@ -16,10 +16,12 @@
 
 #include <algorithm>
 #include <array>
+#include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <queue>
 #include <span>
 #include <string>
 #include <string_view>
@@ -28,12 +30,16 @@
 
 #include <fb303/CallbackValuesMap.h>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <folly/Benchmark.h>
 #include <folly/BenchmarkUtil.h>
+#include <folly/Range.h>
 #include <folly/algorithm/BinaryHeap.h>
+#include <folly/container/HeterogeneousAccess.h>
 #include <folly/container/Reserve.h>
 #include <folly/hash/Hash.h>
 #include <folly/init/Init.h>
+#include <glog/logging.h>
 
 using CounterType = int64_t;
 using CallbackMap = facebook::fb303::CallbackValuesMap<CounterType>;

@@ -16,6 +16,16 @@
 
 #include <fb303/Timeseries.h>
 
+#include <stddef.h>
+#include <chrono>
+#include <compare>
+#include <ostream>
+#include <string>
+#include <vector>
+
+#include <folly/Conv.h>
+#include <folly/stats/BucketedTimeSeries.h>
+#include <glog/logging.h>
 #include <gtest/gtest.h>
 
 using namespace std;

@@ -16,6 +16,7 @@
 
 #include <fb303/detail/QuantileStatMap.h>
 
+#include <gflags/gflags.h>
 DEFINE_bool(
     fb303_qstat_legacy_use_count_for_rate,
     false,

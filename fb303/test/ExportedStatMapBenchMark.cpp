@@ -15,13 +15,29 @@
  */
 
 #include <boost/lexical_cast.hpp>
+#include <fb303/DynamicCounters.h>
+#include <fb303/ExportedHistogramMap.h>
+#include <fb303/ExportedStatMap.h>
+#include <fb303/Timeseries.h>
+#include <fmt/format.h>
+#include <folly/Synchronized.h>
+#include <folly/lang/Hint.h>
+#include <glog/logging.h>
 
 #include <fb303/ExportedHistogramMapImpl.h>
 #include <fb303/ExportedStatMapImpl.h>
 #include <folly/Benchmark.h>
 #include <folly/Random.h>
 #include <folly/init/Init.h>
+#include <stdint.h>
+#include <chrono>
+#include <compare>
 #include <functional>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include <ctime>
 using namespace std;

@@ -15,11 +15,19 @@
  */
 
 #include <fb303/ExportedStatMapImpl.h>
+#include <fb303/ServiceData.h>
+#include <folly/Conv.h>
+#include <glog/logging.h>
 #include "common/stats/ServiceData.h"
 
 #include <gtest/gtest.h>
+#include <stdint.h>
 #include <atomic>
+#include <map>
+#include <ostream>
+#include <string>
 #include <thread>
+#include <vector>
 
 using namespace std;
 using namespace facebook;

@@ -17,9 +17,14 @@
 #pragma once
 
 #include <fb303/Timeseries.h>
+#include <folly/stats/BucketedTimeSeries.h>
 #include <folly/stats/Histogram.h>
 #include <folly/stats/TimeseriesHistogram.h>
 
+#include <stdint.h>
+#include <time.h>
+#include <chrono>
+#include <string>
 namespace facebook::fb303 {
 
 const std::chrono::seconds kHistogramMinuteTenMinuteHourDurations[] = {

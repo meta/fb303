@@ -16,10 +16,22 @@
 
 #include <common/fb303/cpp/DefaultMonitor.h>
 #include <fb303/BaseService.h>
+#include <fb303/DynamicCounters.h>
+#include <fb303/LimitUtils.h>
+#include <fb303/ServiceData.h>
 #include <fb303/test/gen-cpp2/TestService.h>
+#include <fb303/test/gen-cpp2/TestServiceAsyncClient.h>
+#include <fb303/thrift/gen-cpp2/fb303_core_types.h>
 #include <folly/Conv.h>
+#include <folly/container/HeterogeneousAccess.h>
+#include <stdint.h>
+#include <thrift/lib/cpp2/async/RpcOptions.h>
 #include <thrift/lib/cpp2/util/ScopedServerInterfaceThread.h>
 #include <chrono>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include <gtest/gtest.h>
 

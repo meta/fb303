@@ -26,6 +26,7 @@
 
 #include <folly/Chrono.h>
 #include <folly/MapUtil.h>
+#include <folly/ScopeGuard.h>
 #include <folly/container/F14Map.h>
 #include <folly/container/RegexMatchCache.h>
 #include <folly/container/Reserve.h>

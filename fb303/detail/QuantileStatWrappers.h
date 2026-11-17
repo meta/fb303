@@ -16,9 +16,14 @@
 
 #pragma once
 
+#include <stddef.h>
+#include <array>
 #include <chrono>
 #include <memory>
 #include <span>
+#include <string>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 #include <fb303/ExportType.h>

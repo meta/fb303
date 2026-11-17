@@ -16,13 +16,23 @@
 
 #pragma once
 
+#include <stddef.h>
+#include <stdint.h>
+#include <chrono>
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include <folly/Range.h>
+#include <folly/container/HeterogeneousAccess.h>
+#include <folly/functional/Invoke.h>
+#include <folly/lang/Hint.h>
+#include <folly/stats/QuantileEstimator.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 

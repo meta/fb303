@@ -23,11 +23,15 @@
 
 #include <fmt/format.h>
 #include <folly/Benchmark.h>
+#include <folly/BenchmarkUtil.h>
 #include <folly/String.h>
 #include <folly/init/Init.h>
 #include <folly/json/DynamicConverter.h>
+#include <glog/logging.h>
 
 #include "common/stats/ServiceData.h"
+#include "fb303/DynamicCounters.h"
+#include "fb303/ServiceData.h"
 
 using namespace folly;
 using namespace facebook::stats;

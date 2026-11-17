@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 
+#include <stdint.h>
 #include <chrono>
+#include <condition_variable>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
 #include <thread>
+#include <utility>
+#include <vector>
 
+#include <fb303/DynamicCounters.h>
+#include <fb303/thrift/gen-cpp2/BaseServiceAsyncClient.h>
 #include <gtest/gtest.h>
+#include <thrift/lib/cpp2/async/processor/HandlerCallback.h>
+#include <thrift/lib/cpp2/util/IntrusiveSharedPtr.h>
 
 #include <folly/Conv.h>
 #include <folly/Memory.h>

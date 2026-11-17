@@ -16,9 +16,11 @@
 
 #include <fb303/FollyLoggingHandler.h>
 
+#include <string>
+
 #include <fb303/ServiceData.h>
+#include <folly/json/JsonTestUtil.h>
 #include <folly/logging/LoggerDB.h>
-#include <folly/test/JsonTestUtil.h>
 #include <gtest/gtest.h>
 
 using namespace facebook::fb303;

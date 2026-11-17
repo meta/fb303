@@ -16,11 +16,32 @@
 
 #include <fb303/detail/QuantileStatMap.h>
 
+#include <stddef.h>
+#include <stdint.h>
+#include <algorithm>
 #include <atomic>
 #include <barrier>
+#include <chrono>
+#include <compare>
+#include <iterator>
+#include <limits>
+#include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <thread>
+#include <utility>
+#include <vector>
 
+#include <fb303/ExportType.h>
+#include <fb303/QuantileStat.h>
+#include <folly/ConstexprMath.h>
+#include <folly/Optional.h>
+#include <folly/Range.h>
+#include <folly/ScopeGuard.h>
+#include <folly/container/MapUtil.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 #include <gtest/gtest.h>
 
 using namespace facebook::fb303;

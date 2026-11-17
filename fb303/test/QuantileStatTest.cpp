@@ -16,6 +16,18 @@
 
 #include <fb303/QuantileStat.h>
 
+#include <stddef.h>
+#include <algorithm>
+#include <chrono>
+#include <compare>
+#include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <folly/Range.h>
+#include <folly/stats/QuantileEstimator.h>
 #include <gtest/gtest.h>
 
 using namespace facebook::fb303;

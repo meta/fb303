@@ -16,14 +16,20 @@
 
 #include "common/stats/ServiceData.h"
 
+#include <atomic>
 #include <barrier>
 #include <cstdint>
+#include <map>
 #include <set>
+#include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
+
+#include "fb303/ServiceData.h"
 
 using namespace std;
 using namespace testing;

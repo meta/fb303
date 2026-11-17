@@ -348,6 +348,7 @@ cpp_library(
     ],
     modular_headers = True,
     exported_deps = [
+        "fbsource//xplat/folly/stats:bucketed_time_series",
         "fbsource//xplat/folly/stats:histogram",
         "fbsource//xplat/folly/stats:timeseries_histogram",
         "//fb303:timeseries",

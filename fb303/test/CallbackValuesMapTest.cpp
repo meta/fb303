@@ -16,15 +16,22 @@
 
 #include <fb303/CallbackValuesMap.h>
 
+#include <stddef.h>
 #include <atomic>
 #include <chrono>
+#include <memory>
 #include <mutex>
 #include <set>
+#include <string>
 #include <thread>
 #include <vector>
 
 #include <boost/bind.hpp>
 #include <fmt/core.h>
+#include <fmt/format.h>
+#include <folly/container/RegexMatchCache.h>
+#include <folly/portability/Unistd.h>
+#include <folly/synchronization/AtomicUtil.h>
 #include <folly/synchronization/Baton.h>
 #include <gtest/gtest.h>
 

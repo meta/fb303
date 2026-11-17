@@ -15,7 +15,16 @@
  */
 
 #include <fb303/TLStatsAsyncAggregator.h>
+
+#include <memory>
+#include <string>
+
+#include <fb303/TLStatsLockTraits.h>
+#include <fb303/ThreadLocalStats.h>
 #include <folly/io/async/EventBase.h>
+#include <folly/io/async/Request.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 
 #include <gtest/gtest.h>
 

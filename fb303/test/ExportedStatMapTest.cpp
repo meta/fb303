@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
+#include <fb303/ExportType.h>
+#include <fb303/ExportedStatMap.h>
 #include <fb303/ExportedStatMapImpl.h>
+#include <fb303/Timeseries.h>
+#include <folly/Synchronized.h>
+#include <glog/logging.h>
 
 #include <fb303/DynamicCounters.h>
 #include <gtest/gtest.h>
+#include <stdint.h>
 #include <atomic>
+#include <chrono>
+#include <compare>
+#include <map>
+#include <ostream>
+#include <string>
 #include <thread>
+#include <utility>
+#include <vector>
 
 #include <ctime>
 using namespace std;

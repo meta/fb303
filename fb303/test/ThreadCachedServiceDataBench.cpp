@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
+#include <stddef.h>
+#include <array>
+#include <string>
+#include <string_view>
+#include <type_traits>
+
 #include <fb303/ThreadCachedServiceData.h>
+#include <folly/hash/Hash.h>
+#include <folly/lang/Assume.h>
+#include <folly/lang/Hint.h>
 
 #include <folly/Benchmark.h>
 #include <folly/init/Init.h>

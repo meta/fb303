@@ -24,9 +24,15 @@
 #include <utility>
 #include <vector>
 
+#include <fb303/ExportType.h>
+#include <fb303/QuantileStat.h>
 #include <fmt/format.h>
 #include <folly/Benchmark.h>
+#include <folly/BenchmarkUtil.h>
+#include <folly/Range.h>
 #include <folly/init/Init.h>
+#include <folly/lang/Hint.h>
+#include <glog/logging.h>
 
 #include <fb303/detail/QuantileStatMap.h>
 

@@ -16,6 +16,16 @@
 
 #include <fb303/TimeseriesHistogram.h>
 
+#include <stddef.h>
+#include <chrono>
+#include <compare>
+#include <limits>
+#include <string>
+#include <vector>
+
+#include <fb303/Timeseries.h>
+#include <folly/Conv.h>
+#include <folly/stats/BucketedTimeSeries.h>
 #include <gtest/gtest.h>
 
 using namespace std;

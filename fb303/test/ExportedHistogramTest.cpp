@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
+#include <fb303/DynamicCounters.h>
+#include <fb303/ExportType.h>
+#include <fb303/ExportedHistogramMap.h>
 #include <fb303/ExportedHistogramMapImpl.h>
+#include <fb303/TimeseriesHistogram.h>
+#include <folly/Synchronized.h>
+#include <folly/lang/Hint.h>
 
 #include <gtest/gtest.h>
+#include <stdint.h>
+#include <chrono>
+#include <compare>
 #include <ctime>
+#include <string>
+#include <vector>
 
 using namespace std;
 using namespace facebook::fb303;
