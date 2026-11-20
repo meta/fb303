@@ -183,6 +183,37 @@ void CallbackValuesMap<T>::registerCallback(
 }
 
 template <typename T>
+std::shared_ptr<typename CallbackValuesMap<T>::CallbackEntry> CallbackValuesMap<
+    T>::registerCallbackIfAbsent(folly::StringPiece name, Callback cob) {
+  auto wlock = callbackMaps_[getShard(name)].wlock();
+  if (wlock->map.contains(name)) {
+    return nullptr;
+  }
+  auto entry = std::make_shared<CallbackEntry>(name.str(), std::move(cob));
+  auto inserted = detail::cachedAddString(*wlock, entry).second;
+  DCHECK(inserted);
+  return entry;
+}
+
+template <typename T>
+bool CallbackValuesMap<T>::unregisterCallbackIfMatches(
+    const std::shared_ptr<CallbackEntry>& expected) {
+  auto callback = expected;
+  if (!callback) {
+    return false;
+  }
+  auto wlock = callbackMaps_[getShard(callback->name())].wlock();
+  auto iter = wlock->map.find(callback->name());
+  if (iter == wlock->map.end() || *iter != callback) {
+    return false;
+  }
+  detail::cachedEraseString(*wlock, iter);
+  wlock.unlock();
+  callback->clear();
+  return true;
+}
+
+template <typename T>
 bool CallbackValuesMap<T>::unregisterCallback(folly::StringPiece name) {
   auto wlock = callbackMaps_[getShard(name)].wlock();
   auto iter = wlock->map.find(name);

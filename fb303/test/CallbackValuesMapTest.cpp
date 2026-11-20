@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <atomic>
 #include <chrono>
+#include <latch>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -423,4 +424,166 @@ TEST(CallbackValuesMapTest, GetRegexKeysCompletesUnderConcurrentPurge) {
 
   EXPECT_FALSE(sawWrong.load());
   EXPECT_EQ(regexKeySet(map, "match_.*").size(), static_cast<size_t>(kStable));
+}
+
+TEST(CallbackValuesMapTest, RegisterCallbackIfAbsentInsertsNewEntry) {
+  TestCallbackValuesMap map;
+  auto receipt = map.registerCallbackIfAbsent("owned", bind(echo, 7));
+
+  ASSERT_NE(receipt, nullptr);
+  EXPECT_EQ(receipt, map.getCallback("owned"));
+  EXPECT_EQ(receipt->name(), "owned");
+  int value = -1;
+  EXPECT_TRUE(map.getValue("owned", &value));
+  EXPECT_EQ(value, 7);
+  EXPECT_EQ(regexKeySet(map, "own.*"), (std::set<string>{"owned"}));
+}
+
+TEST(CallbackValuesMapTest, RegisterCallbackIfAbsentRefusesDuplicate) {
+  TestCallbackValuesMap map;
+  map.registerCallback("name", bind(echo, 1));
+  const auto existing = map.getCallback("name");
+  std::atomic<int> refusedCalls{0};
+
+  auto receipt = map.registerCallbackIfAbsent("name", [&refusedCalls] {
+    ++refusedCalls;
+    return 2;
+  });
+  TestCallbackValuesMap::ValuesMap values;
+  map.getValues(&values);
+
+  EXPECT_EQ(receipt, nullptr);
+  EXPECT_EQ(map.getCallback("name"), existing);
+  EXPECT_EQ(values, (TestCallbackValuesMap::ValuesMap{{"name", 1}}));
+  EXPECT_EQ(refusedCalls.load(), 0);
+  EXPECT_EQ(map.getNumKeys(), 1);
+}
+
+TEST(CallbackValuesMapTest, UnregisterCallbackIfMatchesRemovesOnlyOwnEntry) {
+  TestCallbackValuesMap map;
+  auto receipt = map.registerCallbackIfAbsent("owned", bind(echo, 1));
+  map.registerCallback("other", bind(echo, 2));
+
+  EXPECT_TRUE(map.unregisterCallbackIfMatches(receipt));
+
+  EXPECT_FALSE(map.contains("owned"));
+  int value = -1;
+  EXPECT_FALSE(receipt->getValue(&value));
+  EXPECT_EQ(value, -1);
+  EXPECT_FALSE(map.unregisterCallbackIfMatches(receipt));
+  EXPECT_FALSE(map.unregisterCallbackIfMatches(nullptr));
+  EXPECT_TRUE(map.getValue("other", &value));
+  EXPECT_EQ(value, 2);
+  EXPECT_EQ(regexKeySet(map, ".*"), (std::set<string>{"other"}));
+}
+
+TEST(CallbackValuesMapTest, StaleReceiptDoesNotRemoveReplacement) {
+  TestCallbackValuesMap map;
+  std::atomic<int> foreignCalls{0};
+  auto foreign = [&foreignCalls] {
+    ++foreignCalls;
+    return 9;
+  };
+  auto overwritten = map.registerCallbackIfAbsent("name", bind(echo, 1));
+  map.registerCallback("name", foreign);
+  EXPECT_FALSE(map.unregisterCallbackIfMatches(overwritten));
+
+  auto removed = map.getCallback("name");
+  EXPECT_TRUE(map.unregisterCallback("name"));
+  auto replacement = map.registerCallbackIfAbsent("name", foreign);
+  ASSERT_NE(replacement, nullptr);
+  EXPECT_FALSE(map.unregisterCallbackIfMatches(removed));
+
+  map.clear();
+  ASSERT_NE(map.registerCallbackIfAbsent("name", foreign), nullptr);
+  EXPECT_FALSE(map.unregisterCallbackIfMatches(replacement));
+
+  EXPECT_EQ(foreignCalls.load(), 0);
+  int value = -1;
+  EXPECT_TRUE(map.getValue("name", &value));
+  EXPECT_EQ(value, 9);
+  EXPECT_EQ(foreignCalls.load(), 1);
+  EXPECT_EQ(regexKeySet(map, "na.*"), (std::set<string>{"name"}));
+}
+
+TEST(CallbackValuesMapTest, RegisterCallbackIfAbsentHasSingleWinner) {
+  TestCallbackValuesMap map;
+  constexpr int kThreads = 8;
+  std::latch start{kThreads};
+  std::atomic<int> winners{0};
+  std::vector<std::jthread> threads;
+  threads.reserve(kThreads);
+  for (int i = 0; i < kThreads; ++i) {
+    threads.emplace_back([&, i] {
+      start.arrive_and_wait();
+      if (map.registerCallbackIfAbsent("name", bind(echo, i))) {
+        ++winners;
+      }
+    });
+  }
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  EXPECT_EQ(winners.load(), 1);
+  EXPECT_EQ(map.getNumKeys(), 1);
+}
+
+TEST(CallbackValuesMapTest, ReceiptOwnersAndStaleCleanupInterleave) {
+  TestCallbackValuesMap map;
+  auto stale = map.registerCallbackIfAbsent("name", bind(echo, -1));
+  ASSERT_TRUE(map.unregisterCallbackIfMatches(stale));
+  std::atomic<bool> stop{false};
+  std::atomic<bool> sawLostOwnership{false};
+  std::atomic<bool> sawStaleRemoval{false};
+  std::vector<std::jthread> threads;
+  threads.reserve(5);
+
+  for (int w = 0; w < 4; ++w) {
+    threads.emplace_back([&, w] {
+      while (!stop.load(std::memory_order_relaxed)) {
+        if (auto receipt = map.registerCallbackIfAbsent("name", bind(echo, w));
+            receipt && !map.unregisterCallbackIfMatches(receipt)) {
+          sawLostOwnership.store(true, std::memory_order_relaxed);
+        }
+      }
+    });
+  }
+  threads.emplace_back([&] {
+    while (!stop.load(std::memory_order_relaxed)) {
+      if (map.unregisterCallbackIfMatches(stale)) {
+        sawStaleRemoval.store(true, std::memory_order_relaxed);
+      }
+      regexKeySet(map, "name");
+    }
+  });
+
+  /* sleep override */ std::this_thread::sleep_for(
+      std::chrono::milliseconds(300));
+  stop.store(true, std::memory_order_relaxed);
+  for (auto& t : threads) {
+    t.join();
+  }
+
+  EXPECT_FALSE(sawLostOwnership.load());
+  EXPECT_FALSE(sawStaleRemoval.load());
+  EXPECT_EQ(map.getNumKeys(), 0);
+  EXPECT_EQ(regexKeySet(map, "name"), std::set<string>{});
+}
+
+TEST(CallbackValuesMapTest, UnregisterCallbackIfMatchesReleasesReceiptOwner) {
+  struct Owner {
+    std::shared_ptr<TestCallbackValuesMap::CallbackEntry> receipt;
+  };
+  TestCallbackValuesMap map;
+  auto owner = std::make_shared<Owner>();
+  owner->receipt = map.registerCallbackIfAbsent("owned", [owner] { return 1; });
+  const std::weak_ptr<Owner> weakOwner = owner;
+  Owner* const rawOwner = owner.get();
+  owner.reset();
+
+  EXPECT_TRUE(map.unregisterCallbackIfMatches(rawOwner->receipt));
+
+  EXPECT_TRUE(weakOwner.expired());
+  EXPECT_FALSE(map.contains("owned"));
 }

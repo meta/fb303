@@ -86,6 +86,14 @@ class CallbackValuesMap {
       Callback cob,
       bool overwrite = true);
 
+  class CallbackEntry;
+
+  // Registers the callback only if the name is absent. Returns the newly
+  // inserted entry, or nullptr if the name was already present.
+  std::shared_ptr<CallbackEntry> registerCallbackIfAbsent(
+      folly::StringPiece name,
+      Callback cob);
+
   /**
    * Unregisters the callback asssociated with the given name.
    *
@@ -94,6 +102,11 @@ class CallbackValuesMap {
    * the callback with the given name wasn't found.
    */
   bool unregisterCallback(folly::StringPiece name);
+
+  // Unregisters `expected` only if it is still the entry registered under its
+  // name. Returns false for a null, removed or replaced entry.
+  bool unregisterCallbackIfMatches(
+      const std::shared_ptr<CallbackEntry>& expected);
 
   /**
    * Unregisters all callbacks.
