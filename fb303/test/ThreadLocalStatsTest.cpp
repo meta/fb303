@@ -30,8 +30,8 @@
 #include <folly/lang/Assume.h>
 #include <folly/lang/Hint.h>
 #include <folly/portability/Sched.h>
-#include <folly/synchronization/test/Barrier.h>
 #include <glog/logging.h>
+#include <latch>
 
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
@@ -773,7 +773,7 @@ struct ContainerAndStats {
 TEST(ThreadLocalStats, stressStatDestructionRace) {
   ServiceData data;
 
-  folly::test::Barrier gate(FLAGS_num_threads * 4 + 1);
+  std::latch gate(FLAGS_num_threads * 4 + 1);
 
   std::vector<std::thread> threads;
   for (gflags::int32 i = 0; i < FLAGS_num_threads; ++i) {
@@ -788,24 +788,24 @@ TEST(ThreadLocalStats, stressStatDestructionRace) {
         c->container.get(), "stat3", 1, 20, 30, SUM, COUNT, 50);
 
     threads.emplace_back([&, c] {
-      gate.wait();
+      gate.arrive_and_wait();
       c->container.reset();
     });
     threads.emplace_back([&, c] {
-      gate.wait();
+      gate.arrive_and_wait();
       c->counter.reset();
     });
     threads.emplace_back([&, c] {
-      gate.wait();
+      gate.arrive_and_wait();
       c->timeseries.reset();
     });
     threads.emplace_back([&, c] {
-      gate.wait();
+      gate.arrive_and_wait();
       c->histogram.reset();
     });
   }
 
-  gate.wait();
+  gate.arrive_and_wait();
 
   for (auto& thread : threads) {
     thread.join();
@@ -1106,12 +1106,12 @@ TEST(ThreadLocalStats, ConcurrentPendingRegistration) {
 
   std::vector<std::thread> threads;
   threads.reserve(kNumThreads);
-  folly::test::Barrier startBarrier(kNumThreads + 1);
+  std::latch startBarrier(kNumThreads + 1);
 
   for (int i = 0; i < kNumThreads; ++i) {
     threads.emplace_back([&, i]() {
       // Wait for all threads to be ready
-      startBarrier.wait();
+      startBarrier.arrive_and_wait();
 
       // Create stats that may contend for the lock
       std::string counterName = "counter_" + std::to_string(i);
@@ -1124,7 +1124,7 @@ TEST(ThreadLocalStats, ConcurrentPendingRegistration) {
   }
 
   // Start all threads at once
-  startBarrier.wait();
+  startBarrier.arrive_and_wait();
 
   // Wait for all threads to complete
   for (auto& thread : threads) {

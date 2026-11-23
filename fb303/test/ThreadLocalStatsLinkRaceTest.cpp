@@ -40,7 +40,7 @@
 #include <fb303/ServiceData.h>
 #include <fmt/core.h>
 #include <folly/Portability.h>
-#include <folly/synchronization/test/Barrier.h>
+#include <latch>
 
 #include <gtest/gtest.h>
 #include <atomic>
@@ -134,7 +134,7 @@ TEST(ThreadLocalStatsLinkRace, HighContentionLinkRace) {
         std::make_shared<ThreadLocalStatsT<TLStatsThreadSafe>>(&data);
 
     // Use a barrier to synchronize all threads to maximize contention
-    folly::test::Barrier barrier(kNumThreads + 1);
+    std::latch barrier(kNumThreads + 1);
 
     std::vector<std::thread> threads;
     threads.reserve(kNumThreads);
@@ -142,7 +142,7 @@ TEST(ThreadLocalStatsLinkRace, HighContentionLinkRace) {
     // Half the threads will create stats (calling link())
     for (int i = 0; i < kNumThreads / 2; ++i) {
       threads.emplace_back([&, i] {
-        barrier.wait();
+        barrier.arrive_and_wait();
         for (int j = 0; j < 20; ++j) {
           auto name = fmt::format("ts_{}_{}_{}", iter, i, j);
           TLTimeseriesT<TLStatsThreadSafe> ts(container.get(), name, SUM);
@@ -154,7 +154,7 @@ TEST(ThreadLocalStatsLinkRace, HighContentionLinkRace) {
     // Half the threads will call aggregate() (which calls completePendingLink)
     for (int i = 0; i < kNumThreads / 2; ++i) {
       threads.emplace_back([&] {
-        barrier.wait();
+        barrier.arrive_and_wait();
         for (int j = 0; j < 100; ++j) {
           container->aggregate();
         }
@@ -162,7 +162,7 @@ TEST(ThreadLocalStatsLinkRace, HighContentionLinkRace) {
     }
 
     // Release all threads at once
-    barrier.wait();
+    barrier.arrive_and_wait();
 
     for (auto& t : threads) {
       t.join();
@@ -210,11 +210,11 @@ TEST(ThreadLocalStatsLinkRace, TryLockFailurePath) {
     }
 
     std::atomic<bool> stop{false};
-    folly::test::Barrier startBarrier(3);
+    std::latch startBarrier(3);
 
     // Thread 1: Continuously hold the lock via aggregate()
     std::thread aggregator([&] {
-      startBarrier.wait();
+      startBarrier.arrive_and_wait();
       while (!stop.load(std::memory_order_relaxed)) {
         container->aggregate();
       }
@@ -223,7 +223,7 @@ TEST(ThreadLocalStatsLinkRace, TryLockFailurePath) {
     // Thread 2: Create many stats rapidly, many will fail try_lock()
     // and read tlStats_.empty() without the lock
     std::thread creator1([&] {
-      startBarrier.wait();
+      startBarrier.arrive_and_wait();
       for (int i = 0; i < 100; ++i) {
         auto name = fmt::format("stat1_{}_{}", iter, i);
         TLTimeseriesT<TLStatsThreadSafe> ts(container.get(), name, SUM);
@@ -234,7 +234,7 @@ TEST(ThreadLocalStatsLinkRace, TryLockFailurePath) {
 
     // Thread 3: Also create stats to increase contention
     std::thread creator2([&] {
-      startBarrier.wait();
+      startBarrier.arrive_and_wait();
       for (int i = 0; i < 100; ++i) {
         auto name = fmt::format("stat2_{}_{}", iter, i);
         TLTimeseriesT<TLStatsThreadSafe> ts(container.get(), name, SUM);
