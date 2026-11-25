@@ -418,7 +418,7 @@ TEST(SimpleLRUMap, ConstComplexity) {
     if (i % 50 == 0) {
       // this is very conservative, the test runs in 6s in dbg on my box
       // and in 0.7s in opt
-      ASSERT_LT(watch.elapsed(), 120_s);
+      ASSERT_LT(watch.elapsed(), 120s);
     }
   }
 
